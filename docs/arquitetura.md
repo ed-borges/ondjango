@@ -16,4 +16,19 @@ Cursos e aulas são guardados na base de dados e geridos no painel administrativ
 4. PostgreSQL, armazenamento de ficheiros, HTTPS, backups e configuração segura antes da implantação.
 5. Definir conteúdos, vídeo, exercícios, pagamentos e certificados de acordo com as prioridades do produto.
 
-Para Angola, priorizar português, interface responsiva e baixo consumo de dados em ligações móveis. As opções de pagamento e requisitos legais devem ser validados antes do lançamento.
+A interface deverá estar disponível em português e inglês, com português como idioma inicial. A tradução da interface e a tradução dos conteúdos dos cursos são trabalhos distintos: cada curso e exercício precisará de conteúdo traduzido antes de estar disponível em ambos os idiomas. Para Angola, priorizar uma interface responsiva e baixo consumo de dados em ligações móveis. As opções de pagamento e requisitos legais devem ser validados antes do lançamento.
+
+## Laboratório de exercícios multilinguagem
+
+O laboratório deve ligar exercícios a aulas e suportar várias linguagens de programação, com editor, execução, testes e resultados claros. As linguagens iniciais escolhidas são Python, JavaScript, Java, C# e Ruby. Os tipos de exercício e as versões de cada linguagem ainda serão definidos. Os administradores podem criar exercícios associados às aulas nas cinco linguagens, com enunciados em português e inglês opcionais. Apenas exercícios publicados em aulas e cursos publicados aparecem no catálogo, com seleção de idioma do enunciado quando a tradução existe. O editor guarda rascunhos apenas no navegador, separados por conta ou visitante; não há sincronização de rascunhos. Testes privados nunca são devolvidos na API pública. A página Lab é uma pré-visualização. O editor tem integração experimental com um serviço Judge0 externo, mas o executor está desativado por defeito e não existe serviço configurado ou validado neste ambiente.
+
+Código submetido por alunos não deve ser executado no processo Django ou diretamente no servidor da aplicação. Antes de disponibilizar execução, escolher e testar um serviço de execução isolado, com isolamento forte por execução, limites de tempo, CPU, memória, processos e saída, bloqueio de rede por padrão, limpeza dos ambientes, autenticação, limites de utilização e monitorização. Testes privados não devem ser expostos ao aluno. Considerar custos, latência e ligações móveis em Angola.
+
+### Ordem proposta de implementação
+
+1. Internacionalização da interface em português e inglês, com seletor de idioma e persistência da preferência.
+2. Evoluir os modelos de exercícios existentes para apresentar as traduções e manter os testes privados no servidor.
+3. Escolha e integração de um executor isolado para as cinco linguagens, com limites e testes de segurança.
+4. Editor, submissão de soluções, visualização de resultados e histórico de tentativas.
+
+Existe um seletor PT/EN para a interface principal, com preferência neste navegador; a tradução de conteúdos e algumas mensagens de validação continuam pendentes. O adaptador de execução e avaliação está implementado, mas depende de um Judge0 externo, configurado e verificado pelo operador. Os testes automatizados usam simulação: as cinco linguagens ainda não foram validadas num executor real.

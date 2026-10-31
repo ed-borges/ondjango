@@ -60,3 +60,31 @@ class LessonCompletion(models.Model):
         constraints = [models.UniqueConstraint(fields=['user', 'lesson'], name='unique_user_lesson_completion')]
         verbose_name = 'aula concluída'
         verbose_name_plural = 'aulas concluídas'
+
+
+class Exercise(models.Model):
+    class Language(models.TextChoices):
+        PYTHON = 'python', 'Python'
+        JAVASCRIPT = 'javascript', 'JavaScript'
+        JAVA = 'java', 'Java'
+        CSHARP = 'csharp', 'C#'
+        RUBY = 'ruby', 'Ruby'
+
+    lesson = models.ForeignKey(Lesson, verbose_name='aula', related_name='exercises', on_delete=models.CASCADE)
+    title_pt = models.CharField('título em português', max_length=200)
+    description_pt = models.TextField('enunciado em português')
+    title_en = models.CharField('título em inglês', max_length=200, blank=True)
+    description_en = models.TextField('enunciado em inglês', blank=True)
+    language = models.CharField('linguagem de programação', max_length=20, choices=Language.choices)
+    starter_code = models.TextField('código inicial', blank=True)
+    private_tests = models.TextField('testes privados', blank=True, help_text='JSON privado: lista de até 3 objetos com stdin e expected_stdout. Nunca incluído no catálogo público.')
+    order = models.PositiveIntegerField('ordem', default=1)
+    published = models.BooleanField('publicado', default=False)
+
+    class Meta:
+        ordering = ['order', 'pk']
+        verbose_name = 'exercício'
+        verbose_name_plural = 'exercícios'
+
+    def __str__(self):
+        return self.title_pt
