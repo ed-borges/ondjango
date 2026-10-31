@@ -124,3 +124,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Trust the HTTPS development preview origin for CSRF checks; production must configure its own.
+CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://*.e2b.app' if DEBUG else '').split(',') if os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://*.e2b.app' if DEBUG else '') else []
