@@ -9,8 +9,9 @@ Estado: **implementação em revisão; ainda não aprovada como concluída**. Es
 - Validação de testes privados no admin e ausência destes dados no catálogo público.
 - Trilha de Python com três níveis, doze aulas e doze exercícios; casos de teste comparados com soluções de referência confiáveis. O processo de criação e o de tradução preservam alterações existentes.
 - Resposta do servidor para validação de palavra-passe em PT e EN.
+- Permissões e isolamento da área de autor, gestão de exercícios e teste de fluxo autor → catálogo → progresso do aluno; envio e proteção de videoaulas, incluindo pedidos parciais.
 
-Estes testes não substituem testes no navegador, revisão de conteúdo ou validação do executor real. O processo do servidor não executa código submetido por alunos nos testes da fase 1.
+Foi também executado um teste de interface simulado com JSDOM para navegação pela trilha, abertura de aula e exercício, carregamento voluntário do vídeo e troca PT/EN. Não foi uma execução num navegador real. Estes testes não substituem testes no navegador, revisão de conteúdo ou validação do executor real. O processo do servidor não executa código submetido por alunos nos testes da fase 1.
 
 ## Revisões manuais pendentes
 
@@ -19,5 +20,6 @@ Estes testes não substituem testes no navegador, revisão de conteúdo ou valid
 3. Alternar PT/EN nas páginas principais e de conta; conferir enunciados, avisos e valores acessíveis. O conteúdo sem tradução inglesa regressa ao português e apresenta aviso na aula.
 4. Rever pedagogicamente as 12 aulas e exercícios, as duas línguas e a adequação ao público angolano; confirmar direitos de utilização e aprovar o conteúdo para publicação.
 5. Confirmar que o Lab é apresentado como indisponível quando o executor está desativado e que não é possível avaliar exercícios nesse estado.
+6. Testar a área de autor em PT/EN, com dois autores: criação e edição de cursos, aulas, exercícios e reprodução de vídeo, incluindo acesso negado aos conteúdos de outro autor.
 
 Registar os resultados e eventuais correções antes de assinalar a fase como concluída. Recuperação de palavra-passe, verificação de email e a preparação de produção pertencem à fase 3; o executor seguro é da fase 2.

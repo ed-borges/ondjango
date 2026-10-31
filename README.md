@@ -31,6 +31,22 @@ A [trilha piloto de Python](docs/trilha-python.md) cobre básico, intermédio e 
 
 Consulta a [lista de aceitação da fase 1](docs/aceitacao-fase-1.md), o [plano de desenvolvimento por fases](docs/plano-de-desenvolvimento.md) e a [direção técnica](docs/arquitetura.md).
 
+## Videoaulas
+
+Um autor com acesso ao painel administrativo pode abrir **Aulas**, criar ou editar uma aula e preencher o campo opcional **link da videoaula**. São aceites links HTTPS normais do YouTube e Vimeo e links diretos HTTPS para ficheiros MP4 ou WebM. A aula e o curso precisam estar publicados para o aluno os ver. O texto continua obrigatório.
+
+O vídeo só é carregado quando o aluno seleciona “Carregar vídeo”, permitindo-lhe escolher se quer usar dados móveis. A reprodução depende da disponibilidade do alojamento, das permissões de incorporação e do acesso do aluno; o operador deve confirmar os direitos de utilização. Links privados/protegidos por palavra-passe e links Vimeo não listados com parâmetros de acesso não são suportados. O URL direto e os seus parâmetros ficam visíveis aos alunos: não incluir segredos. Os provedores externos recebem dados de acesso quando o vídeo é carregado.
+
+### Área de autor e upload (desenvolvimento)
+
+Um administrador pode conceder a um utilizador a permissão **“Pode criar e gerir os próprios cursos”** no painel de utilizadores do Django. Sem esta permissão o utilizador não acede à área de autor. Não é necessário atribuir acesso ao admin: autores normais não devem receber permissões administrativas ou `is_staff`. Administradores mantêm os privilégios amplos do Django admin. Cursos antigos não têm autor atribuído automaticamente; um administrador pode atribuí-los editando o curso no admin.
+
+O autor autenticado encontra **Área do autor** no menu e pode criar/editar os seus próprios cursos e aulas, publicar ou despublicar, adicionar um link de vídeo ou enviar um ficheiro MP4/WebM até 100 MB. O mesmo campo não aceita link e ficheiro ao mesmo tempo. O autor pode também criar e editar exercícios nas suas aulas, incluindo enunciados PT/EN e testes privados. O painel dispõe de seleção PT/EN, mas a tradução e acessibilidade ainda precisam de revisão no navegador. A eliminação de cursos e revisão editorial não estão implementadas. Publicar disponibiliza imediatamente o conteúdo.
+
+Os ficheiros são guardados localmente em `private_videos/` (fora de ficheiros estáticos e ignorado pelo Git). São servidos pela aplicação apenas para aulas e cursos publicados ou ao autor do rascunho; a ligação externa, por sua vez, depende das permissões do fornecedor. Substituir/remover um vídeo ou eliminar a aula agenda a remoção do ficheiro após a transação ser confirmada.
+
+**Não está pronto para produção.** A validação verifica apenas tamanho, extensão e assinatura inicial; não garante que o ficheiro seja seguro ou reproduzível. O limite é aplicado após a receção do upload: um proxy deve impor limites antes do Django. Antes do lançamento, configurar armazenamento privado persistente, proteção de conteúdo, análise de ficheiros, quotas, limites de tráfego, transcodificação, backups, limpeza de ficheiros órfãos e entrega eficiente de vídeo. Os ficheiros locais podem ser perdidos entre ambientes ou implantações.
+
 ## Executor do Lab (experimental)
 
 A aplicação nunca executa código de alunos diretamente. A integração requer um serviço Judge0 separado, controlado pelo operador, com isolamento forte, autenticação, rede desativada, limites de recursos e proteção contra abuso. **Não está configurado neste ambiente e não foi testado com um executor real.** Não ativar em produção antes de rever e testar o isolamento, versões/IDs de linguagens e políticas de segurança.

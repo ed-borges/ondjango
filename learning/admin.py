@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.db import transaction
 from .models import Course, Lesson, Exercise, LearningPath, LearningPathCourse
-from .forms import ExerciseAdminForm
+from .forms import ExerciseAdminForm, AdminLessonForm
 
 
 class LessonInline(admin.TabularInline):
@@ -21,9 +22,21 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('title', 'course', 'order', 'published')
+    form = AdminLessonForm
+    list_display = ('title', 'course', 'order', 'has_video', 'published')
     list_filter = ('published', 'course')
     search_fields = ('title', 'content')
+
+    @admin.display(boolean=True, description='Vídeo')
+    def has_video(self, obj):
+        return bool(obj.video_url or obj.video_file)
+
+    def save_model(self, request, obj, form, change):
+        old_name = Lesson.objects.get(pk=obj.pk).video_file.name if change else ''
+        super().save_model(request, obj, form, change)
+        if old_name and old_name != obj.video_file.name:
+            storage = obj._meta.get_field('video_file').storage
+            transaction.on_commit(lambda: storage.delete(old_name))
 
 
 @admin.register(Exercise)

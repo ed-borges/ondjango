@@ -3,12 +3,14 @@ from django.contrib.auth import login
 from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.cache import never_cache
 from .forms import RegistrationForm
 from .exercise_tests import parse_private_tests
+from .video import video_source
 from .models import Course, Lesson, LessonCompletion, Exercise, LearningPath, LearningPathCourse
 
 
@@ -43,6 +45,7 @@ def catalog(request):
         'lessons': [{
             'id': lesson.pk, 'title': lesson.title, 'content': lesson.content,
             'title_en': lesson.title_en, 'content_en': lesson.content_en,
+            'video': ({'kind': 'file', 'url': reverse('lesson_video', args=[lesson.pk])} if lesson.video_file else video_source(lesson.video_url)),
             'exercises': [{
                 'id': exercise.pk, 'title': exercise.title_pt, 'description': exercise.description_pt,
                 'title_en': exercise.title_en, 'description_en': exercise.description_en,
@@ -70,7 +73,7 @@ def progress(request):
     if not request.user.is_authenticated:
         return JsonResponse({'authenticated': False})
     ids = LessonCompletion.objects.filter(user=request.user, lesson__published=True, lesson__course__published=True).values_list('lesson_id', flat=True)
-    return JsonResponse({'authenticated': True, 'username': request.user.get_username(), 'completed': list(ids)})
+    return JsonResponse({'authenticated': True, 'username': request.user.get_username(), 'can_author': request.user.has_perm('learning.can_author'), 'completed': list(ids)})
 
 
 @require_POST

@@ -32,3 +32,7 @@ Código submetido por alunos não deve ser executado no processo Django ou diret
 4. Editor, submissão de soluções, visualização de resultados e histórico de tentativas.
 
 Existe um seletor PT/EN para a interface principal e conteúdo traduzível, com preferência neste navegador. A trilha piloto inclui traduções que precisam de revisão; outros cursos podem ainda não estar traduzidos. O adaptador de execução e avaliação está implementado, mas depende de um Judge0 externo, configurado e verificado pelo operador. Os testes automatizados usam simulação: as cinco linguagens ainda não foram validadas num executor real.
+
+## Videoaulas
+
+A área de autor exige a permissão `learning.can_author` e limita a edição aos cursos pertencentes ao utilizador. Administradores mantêm acesso amplo através do admin; não conceder privilégios de administrador a autores normais. O autor pode associar uma URL externa ou enviar MP4/WebM até 100 MB. Ficheiros são armazenados localmente em diretório privado e servidos pela aplicação apenas para aulas e cursos publicados ou ao autor do rascunho. O aluno decide quando carregar. Links privados e parâmetros de acesso do Vimeo não são suportados. A verificação de upload é superficial e o armazenamento local é apenas para desenvolvimento; proteção, quotas, análise, backups e alojamento persistente são necessários antes de produção. Verificar disponibilidade, incorporação, direitos e privacidade antes de publicar.
