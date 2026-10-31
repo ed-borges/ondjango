@@ -145,3 +145,9 @@ def delete_lesson_video_after_commit(sender, instance, **kwargs):
     if name:
         storage = instance._meta.get_field('video_file').storage
         transaction.on_commit(lambda: storage.delete(name))
+
+
+class LabCooldown(models.Model):
+    """Shared per-user submission cooldown; stores no code or private tests."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True, related_name='lab_cooldown')
+    next_allowed_at = models.DateTimeField()

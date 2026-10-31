@@ -11,6 +11,7 @@ from django.views.decorators.cache import never_cache
 from .forms import RegistrationForm
 from .exercise_tests import parse_private_tests
 from .video import video_source
+from .runner import runner_configured
 from .models import Course, Lesson, LessonCompletion, Exercise, LearningPath, LearningPathCourse
 
 
@@ -37,7 +38,7 @@ def catalog(request):
             Prefetch('exercises', queryset=Exercise.objects.filter(published=True), to_attr='published_exercises')
         ), to_attr='published_lessons')
     )
-    return JsonResponse({'runner_enabled': settings.LAB_RUNNER_ENABLED and bool(settings.LAB_RUNNER_TOKEN) and settings.LAB_RUNNER_URL.startswith('https://'), 'courses': [{
+    return JsonResponse({'runner_enabled': runner_configured(), 'courses': [{
         'id': course.slug, 'title': course.title, 'description': course.description,
         'title_en': course.title_en, 'description_en': course.description_en,
         'category': course.category, 'level': course.level, 'time': course.duration,
@@ -98,16 +99,15 @@ if settings.DEBUG:
 def evaluate_exercise(request, exercise_id):
     """Run private stdin/stdout tests on an explicitly configured external sandbox."""
     import json
-    from urllib.parse import urlsplit
-    from django.core.cache import cache
-    from .runner import LANGUAGE_IDS, RunnerError, run_test
+    from datetime import timedelta
+    from django.db import DatabaseError
+    from django.utils import timezone
+    from .models import LabCooldown
+    from .runner import LANGUAGES, RunnerError, run_test
 
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'authentication_required'}, status=401)
-    if not settings.LAB_RUNNER_ENABLED:
-        return JsonResponse({'error': 'runner_unavailable'}, status=503)
-    parts = urlsplit(settings.LAB_RUNNER_URL)
-    if parts.scheme != 'https' or not parts.hostname or parts.username or parts.password or parts.query or parts.fragment or not settings.LAB_RUNNER_TOKEN:
+    if not runner_configured():
         return JsonResponse({'error': 'runner_unavailable'}, status=503)
     try:
         exercise = Exercise.objects.get(pk=exercise_id, published=True, lesson__published=True, lesson__course__published=True)
@@ -120,13 +120,23 @@ def evaluate_exercise(request, exercise_id):
         code = body['code']
         cases = parse_private_tests(exercise.private_tests)
         if (not isinstance(code, str) or not code.strip() or len(code.encode('utf-8')) > 32000
-                or exercise.language not in LANGUAGE_IDS):
+                or exercise.language not in LANGUAGES):
             raise ValueError
     except (ValueError, TypeError, KeyError, UnicodeDecodeError):
         return JsonResponse({'error': 'invalid_submission_or_tests'}, status=400)
-    # In production use a shared atomic cache (e.g. Redis), plus gateway rate limits.
-    if not cache.add(f'lab-evaluate:{request.user.pk}', 'busy', timeout=30):
-        return JsonResponse({'error': 'rate_limited'}, status=429)
+    # Atomic conditional update works across workers that share the database.
+    # A gateway-level global limit and abuse controls are still required.
+    try:
+        now = timezone.now()
+        LabCooldown.objects.get_or_create(user=request.user, defaults={'next_allowed_at': now})
+        reserved = LabCooldown.objects.filter(user=request.user, next_allowed_at__lte=now).update(
+            next_allowed_at=now + timedelta(seconds=settings.LAB_COOLDOWN_SECONDS))
+    except DatabaseError:
+        return JsonResponse({'error': 'runner_unavailable'}, status=503)
+    if not reserved:
+        response = JsonResponse({'error': 'rate_limited'}, status=429)
+        response['Retry-After'] = str(settings.LAB_COOLDOWN_SECONDS)
+        return response
     try:
         passed = sum(run_test(exercise.language, code, case['stdin'], case['expected_stdout']) for case in cases)
     except RunnerError:

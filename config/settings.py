@@ -142,3 +142,7 @@ LAB_RUNNER_TOKEN = os.environ.get('LAB_RUNNER_TOKEN', '')
 # Local private uploads for development; not exposed by static file serving.
 PRIVATE_VIDEO_ROOT = BASE_DIR / 'private_videos'
 MAX_VIDEO_BYTES = 100 * 1024 * 1024
+
+# Verify these IDs against the exact Judge0 installation before enabling the lab.
+LAB_LANGUAGE_IDS = os.environ.get('LAB_LANGUAGE_IDS', '{"python":71,"javascript":63,"java":62,"csharp":51,"ruby":72}')
+LAB_COOLDOWN_SECONDS = 30

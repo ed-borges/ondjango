@@ -9,3 +9,5 @@ dist/
 .vite/
 
 private_videos/
+
+infra/judge0/judge0.conf
