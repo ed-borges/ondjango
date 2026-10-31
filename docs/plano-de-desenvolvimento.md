@@ -25,6 +25,8 @@ Plano inicial para uma equipa de duas pessoas. As fases são propostas e podem s
 
 ## Fase 2 — Lab seguro e multilinguagem
 
+**Estado: iniciada; executor real e verificação de segurança pendentes.** Ver [aceitação da fase 2](aceitacao-fase-2.md).
+
 **Objetivo:** permitir testar exercícios num serviço de execução isolado e controlado.
 
 - Escolher, implementar e operar uma sandbox externa isolada, com rede bloqueada por padrão e limites de tempo, CPU, memória, processos e saída. Verificar estes controlos independentemente da aplicação.

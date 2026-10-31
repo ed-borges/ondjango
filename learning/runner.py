@@ -1,19 +1,43 @@
 """Adapter for a separately deployed, operator-managed Judge0 sandbox.
 
-Django must never execute student code itself. Enabling the adapter is not a
-substitute for hardening and independently verifying the sandbox deployment.
+Django never executes student code. Enabling this adapter does not replace
+independent hardening and verification of the sandbox deployment.
 """
 import json
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 from django.conf import settings
 
 
-LANGUAGE_IDS = {'python': 71, 'javascript': 63, 'java': 62, 'csharp': 51, 'ruby': 72}
+LANGUAGES = frozenset({'python', 'javascript', 'java', 'csharp', 'ruby'})
 
 
 class RunnerError(Exception):
     pass
+
+
+def language_ids():
+    try:
+        mapping = json.loads(settings.LAB_LANGUAGE_IDS)
+        if (not isinstance(mapping, dict) or set(mapping) != LANGUAGES
+                or any(type(value) is not int or value <= 0 for value in mapping.values())
+                or len(set(mapping.values())) != len(LANGUAGES)):
+            return None
+        return mapping
+    except (ValueError, TypeError):
+        return None
+
+
+def runner_configured():
+    try:
+        parts = urlsplit(settings.LAB_RUNNER_URL)
+        return bool(settings.LAB_RUNNER_ENABLED and settings.LAB_RUNNER_TOKEN and language_ids()
+                    and parts.scheme == 'https' and parts.hostname and not parts.username
+                    and not parts.password and not parts.query and not parts.fragment
+                    and parts.port in (None, 443))
+    except (TypeError, ValueError):
+        return False
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -22,8 +46,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def run_test(language, code, stdin, expected):
+    mapping = language_ids()
+    if not mapping or language not in mapping:
+        raise RunnerError('Linguagem não configurada')
     payload = {
-        'language_id': LANGUAGE_IDS[language], 'source_code': code,
+        'language_id': mapping[language], 'source_code': code,
         'stdin': stdin, 'expected_output': expected,
         'cpu_time_limit': 2, 'wall_time_limit': 5, 'memory_limit': 128000,
         'max_processes_and_or_threads': 32, 'enable_network': False,
@@ -40,9 +67,10 @@ def run_test(language, code, stdin, expected):
             raise RunnerError('Resposta do executor demasiado grande')
         result = json.loads(raw)
         status = result['status']['id']
-        if not isinstance(status, int) or status in (1, 2):
-            raise RunnerError('O executor não terminou o teste')
-        # Never return stdout, stderr, compile output, input or expected output to clients.
+        # Pending, infrastructure errors and unknown statuses are not failed tests.
+        if type(status) is not int or status not in range(3, 13):
+            raise RunnerError('O executor não terminou corretamente')
+        # No stdout, stderr, compiler output, inputs or expected output go to clients.
         return status == 3
     except (urllib.error.URLError, TimeoutError, ValueError, KeyError, TypeError) as exc:
         raise RunnerError('Executor indisponível') from exc

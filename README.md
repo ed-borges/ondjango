@@ -51,7 +51,7 @@ Os ficheiros são guardados localmente em `private_videos/` (fora de ficheiros e
 
 A aplicação nunca executa código de alunos diretamente. A integração requer um serviço Judge0 separado, controlado pelo operador, com isolamento forte, autenticação, rede desativada, limites de recursos e proteção contra abuso. **Não está configurado neste ambiente e não foi testado com um executor real.** Não ativar em produção antes de rever e testar o isolamento, versões/IDs de linguagens e políticas de segurança.
 
-Para um ambiente controlado, configurar `LAB_RUNNER_ENABLED=1`, `LAB_RUNNER_URL=https://...` e `LAB_RUNNER_TOKEN` no servidor. O endpoint Judge0 tem de suportar `wait=true`, aceitar o token em `X-Auth-Token` e suportar os IDs de linguagem 71, 63, 62, 51 e 72 para Python, JavaScript, Java, C# e Ruby, respetivamente. Os IDs dependem da instalação e precisam de ser verificados. A aplicação solicita limites e bloqueio de rede; é o executor, não Django, que os deve impor. Necessita de proteção de tráfego na infraestrutura, cache partilhada e atómica para o limite de utilização e supervisão antes do lançamento.
+Para um ambiente controlado, configurar `LAB_RUNNER_ENABLED=1`, `LAB_RUNNER_URL=https://...` e `LAB_RUNNER_TOKEN` no servidor. O endpoint Judge0 tem de suportar `wait=true` e aceitar o token em `X-Auth-Token`. Configurar `LAB_LANGUAGE_IDS` como JSON com as chaves `python`, `javascript`, `java`, `csharp` e `ruby`. Os IDs padrão 71, 63, 62, 51 e 72 são apenas exemplos; verificar IDs e versões na instalação real. A aplicação solicita limites e bloqueio de rede; é o executor, não Django, que os deve impor. Existe um intervalo por conta na base de dados, mas são necessários limites globais e por IP, controlo de concorrência e supervisão antes do lançamento.
 
 No painel administrativo, o campo **testes privados** aceita JSON com até três objetos, com as chaves `stdin` e `expected_stdout` (ver formato abaixo). Apenas são devolvidas contagens de testes aprovados, não os testes nem a saída. Só alunos autenticados podem submeter.
 
@@ -60,3 +60,5 @@ No painel administrativo, o campo **testes privados** aceita JSON com até três
 ```
 
 O comando de demonstração adiciona um teste privado para instalações novas; não altera exercícios existentes.
+
+A [configuração Docker de referência para Judge0](infra/judge0/README.md) é apenas para uma VM de teste isolada e ainda não foi executada neste ambiente. Consulta a [lista de aceitação da fase 2](docs/aceitacao-fase-2.md) antes de ativar o Lab. Após aprovação do isolamento, `python manage.py verify_lab --confirm-isolated` verifica os cinco runtimes com programas fixos; não comprova a segurança da sandbox.
