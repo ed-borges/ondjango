@@ -61,4 +61,4 @@ No painel administrativo, o campo **testes privados** aceita JSON com até três
 
 O comando de demonstração adiciona um teste privado para instalações novas; não altera exercícios existentes.
 
-A [configuração Docker de referência para Judge0](infra/judge0/README.md) é apenas para uma VM de teste isolada e ainda não foi executada neste ambiente. Consulta a [lista de aceitação da fase 2](docs/aceitacao-fase-2.md) antes de ativar o Lab. Após aprovação do isolamento, `python manage.py verify_lab --confirm-isolated` verifica os cinco runtimes com programas fixos; não comprova a segurança da sandbox.
+Para experimentar sem VPS, consulta o [guia de teste numa VM local](docs/teste-local-fase2.md). A [configuração Docker de referência para Judge0](infra/judge0/README.md) é apenas para uma VM de teste isolada e ainda não foi executada neste ambiente. Consulta a [lista de aceitação da fase 2](docs/aceitacao-fase-2.md) antes de ativar o Lab. Após aprovação do isolamento, `python manage.py verify_lab --confirm-isolated` verifica os cinco runtimes com programas fixos; não comprova a segurança da sandbox.

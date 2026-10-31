@@ -36,7 +36,7 @@ A configuração gera segredos locais. O upstream escreve variáveis de ambiente
    ```
 
    A ordem não garante que a base esteja pronta: verificar o estado de saúde por meios protegidos e consultar a documentação upstream. Os logs estão desativados; preparar observabilidade segura separadamente. Não executar `docker compose config` sem `--quiet`, nem partilhar o resultado de `docker inspect`.
-5. Confirmar que a API local recusa pedidos sem autenticação e que a porta não é acessível a partir de outras máquinas; testar limites e bloqueio de rede de forma independente. Fazer testes apenas com código controlado e sem dados reais.
+5. Na VM, executar `python3 smoke_test.py --confirm-vm` para verificar autenticação e os cinco runtimes com programas fixos. Consultar o [guia de teste local](../../docs/teste-local-fase2.md). Confirmar também que a porta não é acessível a partir de outras máquinas e testar limites e bloqueio de rede de forma independente. O smoke test não comprova segurança. Fazer testes apenas com código controlado e sem dados reais.
 6. Configurar um **proxy privado com TLS válido** e firewall/controlo de origem. No ambiente Django de teste, usar `LAB_RUNNER_ENABLED=1`, `LAB_RUNNER_URL` com a URL HTTPS privada e `LAB_RUNNER_TOKEN` com o mesmo valor de `AUTHN_TOKEN`, injetado por um gestor de segredos. Confirmar os IDs e versões reais das cinco linguagens e configurar `LAB_LANGUAGE_IDS`. Não colocar tokens em ficheiros versionados, URLs ou conversas.
 7. Depois de aprovação do isolamento, executar na aplicação `python manage.py verify_lab --confirm-isolated`. Usa cinco programas fixos; verifica conectividade/runtimes **não** segurança. Falhas podem resultar de IDs, versões, limites ou incompatibilidade de `wait=true`.
 
