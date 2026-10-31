@@ -130,3 +130,8 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Trust the HTTPS development preview origin for CSRF checks; production must configure its own.
 CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://*.e2b.app' if DEBUG else '').split(',') if os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://*.e2b.app' if DEBUG else '') else []
+
+# Disabled by default. The operator must deploy and harden a separate Judge0 service.
+LAB_RUNNER_ENABLED = os.environ.get('LAB_RUNNER_ENABLED', '0') == '1'
+LAB_RUNNER_URL = os.environ.get('LAB_RUNNER_URL', '')
+LAB_RUNNER_TOKEN = os.environ.get('LAB_RUNNER_TOKEN', '')

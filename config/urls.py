@@ -16,6 +16,7 @@ urlpatterns = [
     path('conta/sair/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('api/courses/', views.catalog, name='catalog'),
     path('api/progress/', views.progress, name='progress'),
+    path('api/exercises/<int:exercise_id>/evaluate/', views.evaluate_exercise, name='evaluate_exercise'),
     path('api/lessons/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
     path('admin/', admin.site.urls),
 ]
