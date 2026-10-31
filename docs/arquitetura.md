@@ -6,13 +6,13 @@ A plataforma será desenvolvida em Python com Django. Começamos com uma aplica�
 
 ## Estado atual
 
-O catálogo e as aulas são dados de demonstração no JavaScript e o progresso é local ao navegador. SQLite está configurado para desenvolvimento. Ainda não existe uma implementação de contas de aluno, conteúdo ou progresso persistidos no servidor.
+Cursos e aulas são guardados na base de dados e geridos no painel administrativo. Apenas conteúdo publicado é disponibilizado no catálogo. O comando `seed_demo` cria conteúdo de demonstração opcional. O registo e a autenticação usam Django; o progresso de alunos autenticados é guardado por aula e por conta. Sem sessão, o progresso é local e não é transferido automaticamente para a conta. SQLite está configurado para desenvolvimento.
 
 ## Próximas etapas propostas
 
-1. Modelos de cursos e aulas no Django e gestão de conteúdo no painel administrativo.
-2. Contas de aluno e início de sessão, com testes de segurança.
-3. Progresso persistido na base de dados, associado a cada aluno.
+1. Evoluir a gestão de cursos e aulas, com conteúdo real e editor adequado.
+2. Reforçar as contas com recuperação de palavra-passe, verificação de email e controlos contra abuso antes do lançamento.
+3. Evoluir a experiência de progresso e avaliar a importação explícita do progresso local.
 4. PostgreSQL, armazenamento de ficheiros, HTTPS, backups e configuração segura antes da implantação.
 5. Definir conteúdos, vídeo, exercícios, pagamentos e certificados de acordo com as prioridades do produto.
 
