@@ -11,6 +11,8 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py seed_python_track  # opcional: cria a trilha piloto em PT/EN
+python manage.py translate_python_track  # opcional: traduz conteúdos piloto existentes e não editados
 python manage.py seed_demo  # opcional: adiciona cursos de demonstração
 python manage.py seed_lab_demo  # opcional: adiciona um exercício demonstrativo
 python manage.py createsuperuser  # opcional: acesso ao painel administrativo
@@ -23,9 +25,11 @@ Abre http://127.0.0.1:8000/. Para testar: `python manage.py test`.
 
 Cursos e aulas são guardados na base de dados e geridos em `/admin/`. Apenas conteúdo publicado aparece no catálogo. O comando `seed_demo` adiciona exemplos sem substituir cursos existentes. O conteúdo inicial é demonstrativo e deve ser editado antes de usar em produção.
 
-Os alunos podem criar uma conta, entrar e guardar aulas concluídas no servidor para consultar noutros dispositivos. Sem sessão, o progresso fica apenas no navegador e não é importado automaticamente para uma conta. SQLite é utilizado para desenvolvimento; a configuração fornecida não está pronta para produção. Recuperação de palavra-passe e verificação de email ainda não estão implementadas. Os administradores podem associar exercícios em Python, JavaScript, Java, C# ou Ruby às aulas e preencher versões de enunciado em português e inglês. Os alunos podem editar código e alternar entre enunciados em português e inglês, quando disponíveis. Rascunhos são guardados apenas no navegador e não são sincronizados; contas diferentes usam rascunhos separados. O seletor PT/EN traduz a interface principal no navegador; cursos e aulas não são traduzidos automaticamente e alguns textos de validação da conta continuam na língua do servidor. A preferência é guardada neste navegador. O Lab inclui uma integração experimental com um executor externo, desativada por defeito.
+Os alunos podem criar uma conta, entrar e guardar aulas concluídas no servidor para consultar noutros dispositivos. Sem sessão, o progresso fica apenas no navegador e não é importado automaticamente para uma conta. SQLite é utilizado para desenvolvimento; a configuração fornecida não está pronta para produção. Recuperação de palavra-passe e verificação de email ainda não estão implementadas. Os administradores podem associar exercícios em Python, JavaScript, Java, C# ou Ruby às aulas e preencher versões de enunciado em português e inglês. Os alunos podem editar código e alternar entre enunciados em português e inglês, quando disponíveis. Rascunhos são guardados apenas no navegador e não são sincronizados; contas diferentes usam rascunhos separados. O seletor PT/EN traduz a interface principal no navegador. Cursos, aulas e trilhas podem ter traduções inglesas geridas no admin; quando não existem, a aula é apresentada em português com aviso. A tradução da interface ainda requer revisão manual. A preferência é guardada neste navegador. O Lab inclui uma integração experimental com um executor externo, desativada por defeito.
 
-A direção técnica está descrita em [docs/arquitetura.md](docs/arquitetura.md).
+A [trilha piloto de Python](docs/trilha-python.md) cobre básico, intermédio e avançado e pode ser aberta em “Trilhas de aprendizagem”. Administradores podem gerir trilhas e ordenar os seus cursos no painel.
+
+Consulta a [lista de aceitação da fase 1](docs/aceitacao-fase-1.md), o [plano de desenvolvimento por fases](docs/plano-de-desenvolvimento.md) e a [direção técnica](docs/arquitetura.md).
 
 ## Executor do Lab (experimental)
 
@@ -33,7 +37,7 @@ A aplicação nunca executa código de alunos diretamente. A integração requer
 
 Para um ambiente controlado, configurar `LAB_RUNNER_ENABLED=1`, `LAB_RUNNER_URL=https://...` e `LAB_RUNNER_TOKEN` no servidor. O endpoint Judge0 tem de suportar `wait=true`, aceitar o token em `X-Auth-Token` e suportar os IDs de linguagem 71, 63, 62, 51 e 72 para Python, JavaScript, Java, C# e Ruby, respetivamente. Os IDs dependem da instalação e precisam de ser verificados. A aplicação solicita limites e bloqueio de rede; é o executor, não Django, que os deve impor. Necessita de proteção de tráfego na infraestrutura, cache partilhada e atómica para o limite de utilização e supervisão antes do lançamento.
 
-No painel administrativo, o campo **testes privados** aceita JSON com até três objetos, por exemplo `[{34}]` (ver formato abaixo). Apenas são devolvidas contagens de testes aprovados, não os testes nem a saída. Só alunos autenticados podem submeter.
+No painel administrativo, o campo **testes privados** aceita JSON com até três objetos, com as chaves `stdin` e `expected_stdout` (ver formato abaixo). Apenas são devolvidas contagens de testes aprovados, não os testes nem a saída. Só alunos autenticados podem submeter.
 
 ```json
 [{"stdin": "", "expected_stdout": "Olá, Ondjango!\n"}]

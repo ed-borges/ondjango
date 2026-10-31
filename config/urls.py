@@ -14,6 +14,7 @@ urlpatterns = [
     path('conta/criar/', views.register, name='register'),
     path('conta/entrar/', login_view, name='login'),
     path('conta/sair/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('api/paths/', views.learning_paths, name='learning_paths'),
     path('api/courses/', views.catalog, name='catalog'),
     path('api/progress/', views.progress, name='progress'),
     path('api/exercises/<int:exercise_id>/evaluate/', views.evaluate_exercise, name='evaluate_exercise'),

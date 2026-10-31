@@ -16,7 +16,7 @@ Cursos e aulas são guardados na base de dados e geridos no painel administrativ
 4. PostgreSQL, armazenamento de ficheiros, HTTPS, backups e configuração segura antes da implantação.
 5. Definir conteúdos, vídeo, exercícios, pagamentos e certificados de acordo com as prioridades do produto.
 
-A interface deverá estar disponível em português e inglês, com português como idioma inicial. A tradução da interface e a tradução dos conteúdos dos cursos são trabalhos distintos: cada curso e exercício precisará de conteúdo traduzido antes de estar disponível em ambos os idiomas. Para Angola, priorizar uma interface responsiva e baixo consumo de dados em ligações móveis. As opções de pagamento e requisitos legais devem ser validados antes do lançamento.
+A interface suporta português e inglês, com português como idioma inicial. Cursos, aulas, trilhas e exercícios suportam traduções inglesas opcionais; quando ausentes, o conteúdo recorre ao português, com aviso na aula. A interface e as traduções precisam de validação manual. Para Angola, priorizar uma interface responsiva e baixo consumo de dados em ligações móveis. As opções de pagamento e requisitos legais devem ser validados antes do lançamento.
 
 ## Laboratório de exercícios multilinguagem
 
@@ -31,4 +31,4 @@ Código submetido por alunos não deve ser executado no processo Django ou diret
 3. Escolha e integração de um executor isolado para as cinco linguagens, com limites e testes de segurança.
 4. Editor, submissão de soluções, visualização de resultados e histórico de tentativas.
 
-Existe um seletor PT/EN para a interface principal, com preferência neste navegador; a tradução de conteúdos e algumas mensagens de validação continuam pendentes. O adaptador de execução e avaliação está implementado, mas depende de um Judge0 externo, configurado e verificado pelo operador. Os testes automatizados usam simulação: as cinco linguagens ainda não foram validadas num executor real.
+Existe um seletor PT/EN para a interface principal e conteúdo traduzível, com preferência neste navegador. A trilha piloto inclui traduções que precisam de revisão; outros cursos podem ainda não estar traduzidos. O adaptador de execução e avaliação está implementado, mas depende de um Judge0 externo, configurado e verificado pelo operador. Os testes automatizados usam simulação: as cinco linguagens ainda não foram validadas num executor real.

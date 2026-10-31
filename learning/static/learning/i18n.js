@@ -1,5 +1,7 @@
 /* Interface copy only; course content and user code are never machine-translated. */
 const englishUI = {
+  'Trilhas de aprendizagem':'Learning paths','APRENDE PASSO A PASSO':'LEARN STEP BY STEP','Uma sequência recomendada de cursos para orientar a tua jornada.':'A recommended sequence of courses to guide your journey.','TRILHA DE APRENDIZAGEM':'LEARNING PATH','aulas concluídas':'lessons completed','Ordem recomendada. Podes começar por qualquer etapa.':'Recommended order. You can start with any step.','Abrir curso':'Open course','Ainda não há cursos publicados nesta trilha.':'There are no published courses in this path yet.','Ainda não há trilhas publicadas.':'There are no published learning paths yet.','Explora os cursos disponíveis enquanto prepararmos novas trilhas.':'Explore the available courses while we prepare new learning paths.','Descobre as trilhas de aprendizagem.':'Discover learning paths.','Segue uma sequência de cursos ao teu ritmo.':'Follow a sequence of courses at your own pace.','Ver trilhas':'View paths',
+  'Ver trilhas ↗':'View paths ↗','Abrir curso ↗':'Open course ↗','Explorar cursos ↗':'Explore courses ↗','Concluir aula e continuar ↗':'Complete lesson and continue ↗','Aula concluída ✓':'Lesson completed ✓','←  Voltar aos cursos':'←  Back to courses','← Voltar ao início':'← Back to home','Criar conta ↗':'Create account ↗','Entrar ↗':'Sign in ↗','Abrir menu':'Open menu','Pesquisar cursos':'Search courses','Progresso da trilha':'Learning path progress','(indisponível)':'(unavailable)','Iniciante':'Beginner','Intermédio':'Intermediate','Avançado':'Advanced',
   'MENU PRINCIPAL':'MAIN MENU','Início':'Home','Explorar cursos':'Explore courses','Minha aprendizagem':'My learning','Lab de código':'Code lab','EM BREVE':'COMING SOON',
   'Aprender é crescer.':'Learning is growth.','Um passo de cada vez, chegamos mais longe.':'One step at a time, we go further.','Precisas de ajuda?':'Need help?',
   'Comunidade Ondjango':'Ondjango community','Feito em Angola':'Made in Angola','Aprendizagem':'Learning','Pesquisar cursos...':'Search courses...',
@@ -36,7 +38,7 @@ const englishUI = {
   'Nome de utilizador':'Username','Palavra-passe':'Password','Confirmação de palavra-passe':'Password confirmation','Feito com':'Made with','em Angola':'in Angola','APRENDER MUDA TUDO':'LEARNING CHANGES EVERYTHING'
 };
 function currentLanguage(){try{return localStorage.getItem('ondjango-ui-language')==='en'?'en':'pt'}catch(_){return 'pt'}}
-function setUILanguage(language){try{localStorage.setItem('ondjango-ui-language',language)}catch(_){} document.documentElement.lang=language}
+function setUILanguage(language){try{localStorage.setItem('ondjango-ui-language',language)}catch(_){} document.cookie=`django_language=${language === 'en' ? 'en' : 'pt'}; Path=/; SameSite=Lax`; document.documentElement.lang=language}
 function translateUI(root=document.body){
   const language=currentLanguage();document.documentElement.lang=language;
   if(language!=='en')return;
@@ -46,7 +48,7 @@ function translateUI(root=document.body){
     const original=node.nodeValue;let text=original.trim();if(!text)continue;
     let translated=englishUI[text];
     if(!translated){
-      translated=text.replace(/^(\d+) aulas$/, '$1 lessons').replace(/^(\d+) curso encontrado$/, '$1 course found').replace(/^(\d+) cursos encontrados$/, '$1 courses found').replace(/^(\d+) de (\d+) aulas concluídas$/, '$1 of $2 lessons completed').replace(/^AULA (\d+)$/, 'LESSON $1');
+      translated=text.replace(/^(\d+) aulas$/, '$1 lessons').replace(/^(\d+) curso encontrado$/, '$1 course found').replace(/^(\d+) cursos encontrados$/, '$1 courses found').replace(/^(\d+) de (\d+) aulas concluídas$/, '$1 of $2 lessons completed').replace(/^AULA (\d+)$/, 'LESSON $1').replace(/^(\d+) \/ (\d+) aulas concluídas$/, '$1 / $2 lessons completed');
       if(translated===text)continue;
     }
     node.nodeValue=original.replace(text,translated);

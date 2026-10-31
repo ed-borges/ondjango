@@ -18,6 +18,8 @@ class Course(models.Model):
     slug = models.SlugField('identificador', unique=True, help_text='Mantém este identificador estável para preservar o progresso local.')
     title = models.CharField('título', max_length=200)
     description = models.TextField('descrição')
+    title_en = models.CharField('título em inglês', max_length=200, blank=True)
+    description_en = models.TextField('descrição em inglês', blank=True)
     category = models.CharField('categoria', max_length=30, choices=Category.choices)
     level = models.CharField('nível', max_length=50, default='Iniciante')
     duration = models.CharField('duração estimada', max_length=50, blank=True)
@@ -39,6 +41,8 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course, verbose_name='curso', related_name='lessons', on_delete=models.CASCADE)
     title = models.CharField('título', max_length=200)
     content = models.TextField('conteúdo', help_text='Texto simples; HTML não é interpretado.')
+    title_en = models.CharField('título em inglês', max_length=200, blank=True)
+    content_en = models.TextField('conteúdo em inglês', blank=True, help_text='Texto simples; HTML não é interpretado.')
     order = models.PositiveIntegerField('ordem', default=1)
     published = models.BooleanField('publicada', default=False)
 
@@ -88,3 +92,39 @@ class Exercise(models.Model):
 
     def __str__(self):
         return self.title_pt
+
+
+class LearningPath(models.Model):
+    slug = models.SlugField('identificador', unique=True)
+    title = models.CharField('título', max_length=200)
+    description = models.TextField('descrição')
+    title_en = models.CharField('título em inglês', max_length=200, blank=True)
+    description_en = models.TextField('descrição em inglês', blank=True)
+    published = models.BooleanField('publicada', default=False)
+    courses = models.ManyToManyField(Course, through='LearningPathCourse', related_name='learning_paths')
+
+    class Meta:
+        ordering = ['title', 'pk']
+        verbose_name = 'trilha'
+        verbose_name_plural = 'trilhas'
+
+    def __str__(self):
+        return self.title
+
+
+class LearningPathCourse(models.Model):
+    path = models.ForeignKey(LearningPath, on_delete=models.CASCADE, related_name='steps', verbose_name='trilha')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='path_steps', verbose_name='curso')
+    order = models.PositiveIntegerField('ordem', default=1)
+
+    class Meta:
+        ordering = ['order', 'pk']
+        constraints = [
+            models.UniqueConstraint(fields=['path', 'course'], name='unique_course_in_path'),
+            models.UniqueConstraint(fields=['path', 'order'], name='unique_order_in_path'),
+        ]
+        verbose_name = 'etapa da trilha'
+        verbose_name_plural = 'etapas da trilha'
+
+    def __str__(self):
+        return f'{self.path}: {self.course}'
