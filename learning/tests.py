@@ -229,3 +229,71 @@ class LabCsrfTests(TestCase):
         client.get(reverse('home'))
         response = client.post(url, data='{"code":"x"}', content_type='application/json', HTTP_X_CSRFTOKEN=client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, 200)
+
+
+from .forms import ExerciseAdminForm
+from .exercise_tests import parse_private_tests
+
+
+class PrivateTestValidationTests(TestCase):
+    def setUp(self):
+        course = Course.objects.create(slug='validacao', title='Curso', description='Descrição', category=Course.Category.PROGRAMACAO)
+        self.lesson = Lesson.objects.create(course=course, title='Aula', content='Conteúdo')
+        self.data = {'lesson': self.lesson.pk, 'title_pt': 'Exercício', 'description_pt': 'Descrição', 'language': 'python', 'order': 1}
+
+    def test_admin_form_accepts_valid_tests_and_empty_drafts(self):
+        for value in ('', '[{"stdin":"", "expected_stdout":"ok\\n"}]'):
+            form = ExerciseAdminForm(data={**self.data, 'private_tests': value})
+            self.assertTrue(form.is_valid(), form.errors)
+
+    def test_admin_form_rejects_invalid_cases_without_disclosing_secret(self):
+        for value in ('not json SECRET', '[]', '{}', '[{"stdin": 1, "expected_stdout": "x"}]', '[{"stdin":"x"}]', '[{"stdin":"' + 'x' * 4001 + '", "expected_stdout":"y"}]'):
+            form = ExerciseAdminForm(data={**self.data, 'private_tests': value})
+            self.assertFalse(form.is_valid())
+            self.assertIn('private_tests', form.errors)
+            self.assertNotIn('SECRET', str(form.errors))
+
+    def test_parser_returns_cases_for_executor(self):
+        cases = [{'stdin': 'entrada', 'expected_stdout': 'saída'}]
+        self.assertEqual(parse_private_tests(json.dumps(cases)), cases)
+
+    def test_admin_rejects_invalid_submission(self):
+        admin = get_user_model().objects.create_superuser('admin-test', password='ExamplePassword123!')
+        self.client.force_login(admin)
+        response = self.client.post('/admin/learning/exercise/add/', {**self.data, 'private_tests': 'inválido'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Os testes privados devem ser JSON válido.')
+        self.assertFalse(Exercise.objects.filter(title_pt='Exercício').exists())
+
+
+class PhaseOneAcceptanceTests(TestCase):
+    def test_account_validation_uses_chosen_django_language(self):
+        self.client.cookies['django_language'] = 'en'
+        response = self.client.post(reverse('register'), {'username': 'newuser', 'password1': '123', 'password2': '123'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This password is too short')
+        self.client.cookies['django_language'] = 'pt'
+        response = self.client.post(reverse('register'), {'username': 'newuser', 'password1': '123', 'password2': '123'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Esta palavra-passe é demasiado curta.')
+
+    def test_teacher_can_publish_bilingual_course_and_student_retrieve_it(self):
+        admin = get_user_model().objects.create_superuser('professor', password='StrongAdminPassword123!')
+        self.client.force_login(admin)
+        response = self.client.post('/admin/learning/course/add/', {
+            'slug': 'curso-teste', 'title': 'Curso piloto', 'description': 'Descrição',
+            'title_en': 'Pilot course', 'description_en': 'Description',
+            'category': Course.Category.PROGRAMACAO, 'level': 'Iniciante', 'icon': 'Py',
+            'color': Course.Color.ORANGE, 'published': 'on',
+            'lessons-TOTAL_FORMS': '0', 'lessons-INITIAL_FORMS': '0',
+            'lessons-MIN_NUM_FORMS': '0', 'lessons-MAX_NUM_FORMS': '1000',
+        })
+        self.assertEqual(response.status_code, 302, response.context and response.context.get('errors'))
+        course = Course.objects.get(slug='curso-teste')
+        lesson = Lesson.objects.create(course=course, title='Aula', content='Texto', title_en='Lesson', content_en='Text', published=True)
+        Exercise.objects.create(lesson=lesson, title_pt='Exercício', description_pt='Enunciado', title_en='Exercise', description_en='Prompt', language=Exercise.Language.PYTHON, private_tests='[{"stdin":"", "expected_stdout":"segredo"}]', published=True)
+        self.client.logout()
+        response = self.client.get(reverse('catalog'))
+        data = response.json()['courses'][0]
+        self.assertEqual((data['title_en'], data['lessons'][0]['title_en']), ('Pilot course', 'Lesson'))
+        self.assertNotIn('segredo', response.content.decode())

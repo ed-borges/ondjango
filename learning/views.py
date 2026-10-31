@@ -8,7 +8,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.cache import never_cache
 from .forms import RegistrationForm
-from .models import Course, Lesson, LessonCompletion, Exercise
+from .exercise_tests import parse_private_tests
+from .models import Course, Lesson, LessonCompletion, Exercise, LearningPath, LearningPathCourse
 
 
 @ensure_csrf_cookie
@@ -36,10 +37,12 @@ def catalog(request):
     )
     return JsonResponse({'runner_enabled': settings.LAB_RUNNER_ENABLED and bool(settings.LAB_RUNNER_TOKEN) and settings.LAB_RUNNER_URL.startswith('https://'), 'courses': [{
         'id': course.slug, 'title': course.title, 'description': course.description,
+        'title_en': course.title_en, 'description_en': course.description_en,
         'category': course.category, 'level': course.level, 'time': course.duration,
         'icon': course.icon, 'color': course.color,
         'lessons': [{
             'id': lesson.pk, 'title': lesson.title, 'content': lesson.content,
+            'title_en': lesson.title_en, 'content_en': lesson.content_en,
             'exercises': [{
                 'id': exercise.pk, 'title': exercise.title_pt, 'description': exercise.description_pt,
                 'title_en': exercise.title_en, 'description_en': exercise.description_en,
@@ -47,6 +50,18 @@ def catalog(request):
             } for exercise in lesson.published_exercises],
         } for lesson in course.published_lessons],
     } for course in courses]})
+
+
+@require_GET
+def learning_paths(request):
+    paths = LearningPath.objects.filter(published=True).prefetch_related(
+        Prefetch('steps', queryset=LearningPathCourse.objects.filter(course__published=True).select_related('course'), to_attr='public_steps')
+    )
+    return JsonResponse({'paths': [{
+        'id': path.slug, 'title': path.title, 'description': path.description,
+        'title_en': path.title_en, 'description_en': path.description_en,
+        'courses': [step.course.slug for step in path.public_steps],
+    } for path in paths]})
 
 
 @never_cache
@@ -100,12 +115,9 @@ def evaluate_exercise(request, exercise_id):
     try:
         body = json.loads(request.body)
         code = body['code']
-        cases = json.loads(exercise.private_tests)
+        cases = parse_private_tests(exercise.private_tests)
         if (not isinstance(code, str) or not code.strip() or len(code.encode('utf-8')) > 32000
-                or exercise.language not in LANGUAGE_IDS or not isinstance(cases, list) or not 1 <= len(cases) <= 3
-                or any(not isinstance(case, dict) or not isinstance(case.get('stdin'), str)
-                       or not isinstance(case.get('expected_stdout'), str)
-                       or len(case['stdin']) > 4000 or len(case['expected_stdout']) > 4000 for case in cases)):
+                or exercise.language not in LANGUAGE_IDS):
             raise ValueError
     except (ValueError, TypeError, KeyError, UnicodeDecodeError):
         return JsonResponse({'error': 'invalid_submission_or_tests'}, status=400)
