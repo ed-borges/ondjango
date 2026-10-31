@@ -21,7 +21,7 @@ Plano inicial para uma equipa de duas pessoas. As fases são propostas e podem s
 
 **Critérios de conclusão:** administrador consegue criar, rever e publicar um curso com aulas e exercícios; aluno consegue aceder às aulas e retomar progresso; interface e mensagens essenciais estão verificadas em PT/EN; testes passam. A execução continua desligada até à fase 2.
 
-**Entregue:** gestão e validação de conteúdo, trilha piloto PT/EN, progresso e testes automatizados. Continuam pendentes a validação manual dos fluxos e a revisão pedagógica e de direitos do conteúdo. O executor permanece desligado.
+**Entregue:** gestão e validação de conteúdo, área de autor para cursos, aulas, exercícios e videoaulas, trilha piloto PT/EN, progresso e testes automatizados. Continuam pendentes a validação manual dos fluxos e a revisão pedagógica e de direitos do conteúdo. O executor permanece desligado.
 
 ## Fase 2 — Lab seguro e multilinguagem
 

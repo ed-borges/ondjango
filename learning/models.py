@@ -1,5 +1,10 @@
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
+from .video import validate_video_url
+from .storage import PrivateVideoStorage, video_upload_path
 
 
 class Course(models.Model):
@@ -15,6 +20,7 @@ class Course(models.Model):
         GREEN = 'green', 'Verde'
         BLUE = 'blue', 'Azul'
 
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='autor', null=True, blank=True, on_delete=models.SET_NULL, related_name='authored_courses')
     slug = models.SlugField('identificador', unique=True, help_text='Mantém este identificador estável para preservar o progresso local.')
     title = models.CharField('título', max_length=200)
     description = models.TextField('descrição')
@@ -32,6 +38,7 @@ class Course(models.Model):
         ordering = ['created_at', 'pk']
         verbose_name = 'curso'
         verbose_name_plural = 'cursos'
+        permissions = [('can_author', 'Pode criar e gerir os próprios cursos')]
 
     def __str__(self):
         return self.title
@@ -43,6 +50,8 @@ class Lesson(models.Model):
     content = models.TextField('conteúdo', help_text='Texto simples; HTML não é interpretado.')
     title_en = models.CharField('título em inglês', max_length=200, blank=True)
     content_en = models.TextField('conteúdo em inglês', blank=True, help_text='Texto simples; HTML não é interpretado.')
+    video_url = models.URLField('link da videoaula', blank=True, max_length=2048, validators=[validate_video_url], help_text='Opcional: link HTTPS do YouTube ou Vimeo, ou link direto MP4/WebM. O vídeo deve estar acessível aos alunos.')
+    video_file = models.FileField('ficheiro de vídeo', storage=PrivateVideoStorage(), upload_to=video_upload_path, blank=True, max_length=255)
     order = models.PositiveIntegerField('ordem', default=1)
     published = models.BooleanField('publicada', default=False)
 
@@ -128,3 +137,11 @@ class LearningPathCourse(models.Model):
 
     def __str__(self):
         return f'{self.path}: {self.course}'
+
+
+@receiver(post_delete, sender=Lesson)
+def delete_lesson_video_after_commit(sender, instance, **kwargs):
+    name = instance.video_file.name
+    if name:
+        storage = instance._meta.get_field('video_file').storage
+        transaction.on_commit(lambda: storage.delete(name))

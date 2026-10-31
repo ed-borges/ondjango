@@ -127,6 +127,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -137,3 +138,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://*.
 LAB_RUNNER_ENABLED = os.environ.get('LAB_RUNNER_ENABLED', '0') == '1'
 LAB_RUNNER_URL = os.environ.get('LAB_RUNNER_URL', '')
 LAB_RUNNER_TOKEN = os.environ.get('LAB_RUNNER_TOKEN', '')
+
+# Local private uploads for development; not exposed by static file serving.
+PRIVATE_VIDEO_ROOT = BASE_DIR / 'private_videos'
+MAX_VIDEO_BYTES = 100 * 1024 * 1024
