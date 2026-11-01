@@ -1,4 +1,5 @@
 import json
+import http.client
 from datetime import timedelta
 from unittest.mock import patch
 
@@ -76,6 +77,38 @@ class LabPhaseTwoTests(TestCase):
         self.assertFalse(run_test('python', 'code', '', ''))
 
 
+    @patch('learning.runner.urllib.request.build_opener')
+    def test_transport_failures_are_runner_errors_without_secrets(self, opener):
+        for failure in (ConnectionResetError('secret token'), TimeoutError('private'),
+                        http.client.IncompleteRead(b'private')):
+            opener.return_value.open.side_effect = failure
+            with self.subTest(failure=type(failure).__name__), self.assertRaises(RunnerError) as raised:
+                run_test('python', 'code', 'private input', 'private output')
+            self.assertNotIn('private', str(raised.exception))
+            self.assertNotIn('secret', str(raised.exception))
+
+    @patch('learning.runner.urllib.request.build_opener')
+    def test_request_uses_limits_auth_and_does_not_follow_redirects(self, opener):
+        response = opener.return_value.open.return_value.__enter__.return_value
+        response.read.return_value = b'{"status":{"id":3}}'
+        self.assertTrue(run_test('python', 'print(1)', 'input', 'output'))
+        request = opener.return_value.open.call_args.args[0]
+        payload = json.loads(request.data)
+        self.assertEqual(request.get_header('X-auth-token'), 'secret')
+        self.assertFalse(payload['enable_network'])
+        self.assertEqual((payload['cpu_time_limit'], payload['wall_time_limit'], payload['memory_limit'], payload['max_processes_and_or_threads']), (2, 5, 128000, 32))
+        self.assertIsNone(opener.call_args.args[0]().redirect_request(None, None, 302, '', {}, 'https://other.example'))
+        self.assertEqual(opener.return_value.open.call_args.kwargs['timeout'], 10)
+
+    @patch('learning.runner.urllib.request.build_opener')
+    def test_oversized_or_invalid_responses_are_runner_errors(self, opener):
+        response = opener.return_value.open.return_value.__enter__.return_value
+        for raw in (b'x' * 65537, b'not json', b'{"status":null}'):
+            response.read.return_value = raw
+            with self.subTest(length=len(raw)), self.assertRaises(RunnerError):
+                run_test('python', 'code', '', '')
+
+
 from io import StringIO
 from django.core.management import call_command, CommandError
 
@@ -89,16 +122,29 @@ class LabVerificationCommandTests(TestCase):
                 call_command('verify_lab', confirm_isolated=True, stdout=StringIO())
 
     @override_settings(LAB_RUNNER_ENABLED=True, LAB_RUNNER_URL='https://sandbox.example.test', LAB_RUNNER_TOKEN='secret')
-    @patch('learning.management.commands.verify_lab.run_test', return_value=True)
+    @patch('learning.management.commands.verify_lab.run_status', side_effect=[3, 4] * 5)
     def test_verification_uses_only_five_fixed_programs(self, runner):
         output = StringIO()
         call_command('verify_lab', confirm_isolated=True, stdout=output)
-        self.assertEqual(runner.call_count, 5)
-        self.assertEqual([call.args[0] for call in runner.call_args_list], ['python', 'javascript', 'java', 'csharp', 'ruby'])
+        self.assertEqual(runner.call_count, 10)
+        self.assertEqual([call.args[0] for call in runner.call_args_list], [language for language in ['python', 'javascript', 'java', 'csharp', 'ruby'] for _ in range(2)])
+        self.assertTrue(all(call.args[3] == ('ondjango\n' if index % 2 == 0 else 'resultado diferente\n') for index, call in enumerate(runner.call_args_list)))
         self.assertIn('NÃO comprova isolamento', output.getvalue())
 
     @override_settings(LAB_RUNNER_ENABLED=True, LAB_RUNNER_URL='https://sandbox.example.test', LAB_RUNNER_TOKEN='secret')
-    @patch('learning.management.commands.verify_lab.run_test', return_value=False)
+    @patch('learning.management.commands.verify_lab.run_status', return_value=6)
     def test_verification_fails_when_runtime_does_not_pass(self, runner):
+        with self.assertRaises(CommandError):
+            call_command('verify_lab', confirm_isolated=True, stdout=StringIO())
+
+    @override_settings(LAB_RUNNER_ENABLED=True, LAB_RUNNER_URL='https://sandbox.example.test', LAB_RUNNER_TOKEN='secret')
+    @patch('learning.management.commands.verify_lab.run_status', side_effect=[3, 3] * 5)
+    def test_verification_rejects_a_runner_that_accepts_wrong_output(self, runner):
+        with self.assertRaises(CommandError):
+            call_command('verify_lab', confirm_isolated=True, stdout=StringIO())
+
+    @override_settings(LAB_RUNNER_ENABLED=True, LAB_RUNNER_URL='https://sandbox.example.test', LAB_RUNNER_TOKEN='secret')
+    @patch('learning.management.commands.verify_lab.run_status', side_effect=[3, 6] * 5)
+    def test_verification_does_not_confuse_compilation_error_with_wrong_answer(self, runner):
         with self.assertRaises(CommandError):
             call_command('verify_lab', confirm_isolated=True, stdout=StringIO())

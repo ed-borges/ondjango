@@ -4,6 +4,7 @@ Django never executes student code. Enabling this adapter does not replace
 independent hardening and verification of the sandbox deployment.
 """
 import json
+import http.client
 import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
@@ -45,7 +46,8 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def run_test(language, code, stdin, expected):
+def run_status(language, code, stdin, expected):
+    """Return a completed Judge0 status without exposing diagnostics."""
     mapping = language_ids()
     if not mapping or language not in mapping:
         raise RunnerError('Linguagem não configurada')
@@ -71,6 +73,10 @@ def run_test(language, code, stdin, expected):
         if type(status) is not int or status not in range(3, 13):
             raise RunnerError('O executor não terminou corretamente')
         # No stdout, stderr, compiler output, inputs or expected output go to clients.
-        return status == 3
-    except (urllib.error.URLError, TimeoutError, ValueError, KeyError, TypeError) as exc:
+        return status
+    except (urllib.error.URLError, OSError, http.client.HTTPException, ValueError, KeyError, TypeError) as exc:
         raise RunnerError('Executor indisponível') from exc
+
+
+def run_test(language, code, stdin, expected):
+    return run_status(language, code, stdin, expected) == 3
