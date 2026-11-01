@@ -30,7 +30,7 @@ Plano inicial para uma equipa de duas pessoas. As fases são propostas e podem s
 **Objetivo:** permitir testar exercícios num serviço de execução isolado e controlado.
 
 - Escolher, implementar e operar uma sandbox externa isolada, com rede bloqueada por padrão e limites de tempo, CPU, memória, processos e saída. Verificar estes controlos independentemente da aplicação.
-- Integrar, testar de ponta a ponta e validar versões e IDs de Python, JavaScript, Java, C# e Ruby. Não assumir que IDs de uma instalação servem para outra.
+- Integrar, testar de ponta a ponta e validar versões e IDs de Python, JavaScript, Java, C# e Ruby. Preparar a integração segura de algoritmos com Compalg ([análise](compalg.md)); a execução ainda não está implementada. Não assumir que IDs de uma instalação servem para outra.
 - Proteger contra abuso com autenticação, limites de utilização partilhados, observabilidade, retenção adequada e testes de segurança; garantir que testes privados não são expostos.
 - Melhorar resultados e decidir se tentativas e rascunhos serão sincronizados. Definir custos e política de utilização.
 

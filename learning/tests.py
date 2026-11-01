@@ -137,8 +137,8 @@ class ExerciseCatalogTests(TestCase):
         self.course.save()
         self.assertEqual(self.client.get(reverse('catalog')).json()['courses'], [])
 
-    def test_all_five_languages_are_available(self):
-        self.assertEqual(set(Exercise.Language.values), {'python', 'javascript', 'java', 'csharp', 'ruby'})
+    def test_exercise_language_choices_include_compalg_preparation(self):
+        self.assertEqual(set(Exercise.Language.values), {'python', 'javascript', 'java', 'csharp', 'ruby', 'algoritmo'})
 
     def test_exercise_admin_is_protected(self):
         self.assertEqual(self.client.get('/admin/learning/exercise/').status_code, 302)

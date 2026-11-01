@@ -1,6 +1,6 @@
 """Opt-in connectivity check using fixed, trusted programs (not student code)."""
 from django.core.management.base import BaseCommand, CommandError
-from learning.runner import RunnerError, run_test, runner_configured
+from learning.runner import RunnerError, run_status, runner_configured
 
 
 PROGRAMS = {
@@ -26,7 +26,10 @@ class Command(BaseCommand):
         failed = []
         for language, program in PROGRAMS.items():
             try:
-                passed = run_test(language, program, '', 'ondjango\n')
+                accepted = run_status(language, program, '', 'ondjango\n')
+                # Require a genuine wrong-answer status, not just any failure.
+                rejected = run_status(language, program, '', 'resultado diferente\n')
+                passed = accepted == 3 and rejected == 4
             except RunnerError:
                 passed = False
             if passed:
@@ -36,4 +39,4 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f'{language}: falhou ou indisponível'))
         if failed:
             raise CommandError('Falha na verificação: ' + ', '.join(failed))
-        self.stdout.write('Conectividade verificada; este teste NÃO comprova isolamento ou segurança.')
+        self.stdout.write('Respostas corretas e incorretas verificadas; este teste NÃO comprova isolamento ou segurança.')
