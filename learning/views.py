@@ -11,7 +11,7 @@ from django.views.decorators.cache import never_cache
 from .forms import RegistrationForm
 from .exercise_tests import parse_private_tests
 from .video import video_source
-from .runner import runner_configured
+from .runner import LANGUAGES, runner_configured
 from .models import Course, Lesson, LessonCompletion, Exercise, LearningPath, LearningPathCourse
 
 
@@ -51,6 +51,7 @@ def catalog(request):
                 'id': exercise.pk, 'title': exercise.title_pt, 'description': exercise.description_pt,
                 'title_en': exercise.title_en, 'description_en': exercise.description_en,
                 'language': exercise.get_language_display(), 'starter_code': exercise.starter_code,
+                'runner_enabled': runner_configured() and exercise.language in LANGUAGES,
             } for exercise in lesson.published_exercises],
         } for lesson in course.published_lessons],
     } for course in courses]})
@@ -113,6 +114,10 @@ def evaluate_exercise(request, exercise_id):
         exercise = Exercise.objects.get(pk=exercise_id, published=True, lesson__published=True, lesson__course__published=True)
     except Exercise.DoesNotExist:
         return JsonResponse({'error': 'not_found'}, status=404)
+    # Compalg is not a Judge0 language. Fail closed until a separately isolated
+    # adapter has been implemented and independently validated.
+    if exercise.language == Exercise.Language.ALGORITMO:
+        return JsonResponse({'error': 'runner_unavailable'}, status=503)
     if len(request.body) > 33000:
         return JsonResponse({'error': 'invalid_submission'}, status=400)
     try:

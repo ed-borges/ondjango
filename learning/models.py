@@ -82,6 +82,7 @@ class Exercise(models.Model):
         JAVA = 'java', 'Java'
         CSHARP = 'csharp', 'C#'
         RUBY = 'ruby', 'Ruby'
+        ALGORITMO = 'algoritmo', 'Algoritmos (Compalg — em preparação)'
 
     lesson = models.ForeignKey(Lesson, verbose_name='aula', related_name='exercises', on_delete=models.CASCADE)
     title_pt = models.CharField('título em português', max_length=200)

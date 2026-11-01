@@ -47,6 +47,10 @@ Os ficheiros são guardados localmente em `private_videos/` (fora de ficheiros e
 
 **Não está pronto para produção.** A validação verifica apenas tamanho, extensão e assinatura inicial; não garante que o ficheiro seja seguro ou reproduzível. O limite é aplicado após a receção do upload: um proxy deve impor limites antes do Django. Antes do lançamento, configurar armazenamento privado persistente, proteção de conteúdo, análise de ficheiros, quotas, limites de tráfego, transcodificação, backups, limpeza de ficheiros órfãos e entrega eficiente de vídeo. Os ficheiros locais podem ser perdidos entre ambientes ou implantações.
 
+## Algoritmos com Compalg
+
+Autores podem preparar exercícios de algoritmos escolhendo Compalg como linguagem. A execução está indisponível e não é enviada ao Judge0. A [análise do Compalg](docs/compalg.md) descreve o trabalho e as validações necessárias antes de usar uma sandbox real.
+
 ## Executor do Lab (experimental)
 
 A aplicação nunca executa código de alunos diretamente. A integração requer um serviço Judge0 separado, controlado pelo operador, com isolamento forte, autenticação, rede desativada, limites de recursos e proteção contra abuso. **Não está configurado neste ambiente e não foi testado com um executor real.** Não ativar em produção antes de rever e testar o isolamento, versões/IDs de linguagens e políticas de segurança.

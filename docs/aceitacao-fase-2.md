@@ -4,6 +4,7 @@
 
 ## Incremento implementado
 
+- Preparação de exercícios de algoritmos com Compalg, sem execução: ver [análise e etapas pendentes](compalg.md). Compalg não é enviado ao Judge0, mesmo quando este está ligado.
 - Adaptador Judge0 externo desativado por defeito; o Django não executa código de alunos.
 - Mapeamento configurável e validado dos cinco IDs de linguagem; configuração incompleta mantém o Lab indisponível. É obrigatório verificar IDs e versões no serviço real.
 - Limite de frequência por conta partilhado pela base de dados, com atualização condicional atómica; uma chamada reserva um intervalo de 30 segundos mesmo que o executor falhe. Não substitui limites globais, proteção por IP, quotas, verificação de contas ou controlo de concorrência.
@@ -23,4 +24,4 @@ Os testes automatizados simulam o executor. Não existe Docker/Podman nem um ser
 5. Validar exercícios de Python e casos de aprovação, erro, compilação e tempo limite para cada linguagem, em sessões reais, sem revelar testes privados. Adicionar histórico ou sincronização apenas após decisão sobre privacidade e retenção.
 6. Rever direitos de conteúdo e completar revisão humana pendente da fase 1 antes do piloto.
 
-Só considerar a fase concluída após os cinco runtimes e os controlos de segurança passarem em infraestrutura real. Não publicar ou aceitar submissões de alunos enquanto isso não estiver comprovado.
+Só considerar a fase concluída após os cinco runtimes e o suporte Compalg solicitado e os controlos de segurança passarem em infraestrutura real. Não publicar ou aceitar submissões de alunos enquanto isso não estiver comprovado.
